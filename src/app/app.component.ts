@@ -1,15 +1,21 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from "./navbar/navbar.component";
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent],
+  imports: [RouterOutlet, NavbarComponent, 
+    // AngularFireModule.initializeApp(environment.firebaseConfig), 
+    AngularFireAuthModule, 
+    AngularFirestoreModule,
+  ],
   template: `
   <main>
     <header class="brand-name">
-      <!-- <img class="brand-logo" src="/assets/app_logo.png" alt="logo" aria-hidden="true"> -->
        <app-navbar></app-navbar>
     </header>
     <section class="content">

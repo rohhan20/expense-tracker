@@ -6,14 +6,7 @@ import { Router } from '@angular/router';
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule],
-  template: `
-  <section class="login-container">
-    <form [formGroup]="loginForm" (submit)="login()">
-      <input id="email" type="email" title="username" placeholder="username" />
-      <input id="password" type="password" placeholder="password"/>
-      <button class="submit" type="submit" [disabled]="!loginForm.valid">Login</button>
-    </form>
-  </section>`,
+  templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 

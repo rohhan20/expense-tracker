@@ -1,1 +1,22 @@
-<p>home works!</p>
+<div class="homepage">
+    <h1 class="welcome">Welcome, [user's name]!</h1>
+  
+    <div class="recent-expenses">
+      <h2>Recent Expenses</h2>
+      <ul>
+        <li *ngFor="let expense of recentExpenses">
+          {{ expense.date | date }} - {{ expense.category }}: {{ expense.amount | currency }}
+        </li>
+      </ul>
+    </div>
+  
+    <div class="expense-summary">
+      <h2>Expense Summary</h2>
+      </div>
+  
+    <div class="quick-actions">
+      <button (click)="addNewExpense()">Add New Expense</button>
+      <button (click)="viewAllExpenses()">View All Expenses</button>
+      <button (click)="openSettings()">Settings</button>
+    </div>
+  </div>
