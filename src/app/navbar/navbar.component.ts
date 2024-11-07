@@ -7,21 +7,21 @@ import { RouterModule } from '@angular/router';
   imports: [RouterModule],
   template: `
   <nav class="navbar">
-    <div class="navbar-logo">
-      <img src="assets/app_logo.png" alt="My App Logo"/>
+    <div class="navbar-brand" routerLink="/home">
+      <span>Expense Tracker</span>
     </div>
     <ul class="navbar-links">
-      <li><a routerLink="home">Home</a></li>
-      <li><a routerLink="about">About</a></li>
-      <li><a routerLink="services">Services</a></li>
-      <li><a routerLink="/about">About</a></li>
-      <li><a routerLink="contact">Blog</a></li>
-      <li style="float:right"><a routerlink = 'login'>Login</a></li>
+      <li><a routerLink="/dashboard">dashboard</a></li>
+      <li><a routerLink="/expenses">Expense</a></li>
+      <li><a routerLink="/profile">Profile</a></li>
+      <li style="float: right"><a (click)="logout()">Logout</a></li>
     </ul>
   </nav>
   `,
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
+  logout() {
 
+  }
 }

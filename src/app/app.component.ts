@@ -4,6 +4,8 @@ import { NavbarComponent } from "./navbar/navbar.component";
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { CurrencyPipe, DatePipe, NgFor } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +14,10 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     // AngularFireModule.initializeApp(environment.firebaseConfig), 
     AngularFireAuthModule, 
     AngularFirestoreModule,
+    // NgFor, 
+    // DatePipe, 
+    // CurrencyPipe, 
+    // MatTableModule,
   ],
   template: `
   <main>
