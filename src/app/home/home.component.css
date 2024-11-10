@@ -6,6 +6,14 @@
     /* margin-right: auto; */
 }
 
+button {
+  margin-bottom: 20px;
+}
+
+input {
+  display: block;
+}
+
 
 .popup {
   position: fixed;

@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -15,13 +16,20 @@ export class LoginComponent {
     email: new FormControl(''),
     password: new FormControl(''),
   });
+  authService: AuthService = inject(AuthService);
+  errorMessage: string | null = null;
 
-  constructor(private router: Router){ }
+  constructor(private router: Router) { }
 
   login() {
     let email = this.loginForm.value.email ?? '';
     let password = this.loginForm.value.password ?? '';
-    console.log(email, password);
+    this.authService
+    .login(email, password)
+    .subscribe({
+      next: () => {this.router.navigate(['home']);},
+      error: (error) => {this.errorMessage = error.code;}
+    });
     this.router.navigate(['home']);
   }
 }

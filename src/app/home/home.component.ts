@@ -1,71 +1,53 @@
-import { Component, OnInit } from '@angular/core';
-import {MatTableModule} from '@angular/material/table'
-
-import { ToolbarModule } from 'primeng/toolbar';
+import {Component, inject} from '@angular/core';
+import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { Expense } from './expense';
-import { CurrencyPipe, DatePipe, NgFor, NgIf } from '@angular/common';
+import { CommonModule} from '@angular/common';
+import { FirebaseDataService } from '../firebase-data.service';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [MatTableModule, DatePipe, CurrencyPipe, NgFor, NgIf],
+  imports: [MatTableModule, CommonModule, ReactiveFormsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: []
 })
-export class HomeComponent implements OnInit{
 
+export class HomeComponent{
+  firebaseDataService: FirebaseDataService = inject(FirebaseDataService);
+  recentExpenses: Expense[] = [];
   showExpenseForm=false;
-  recentExpenses: Expense[] = [
-    {
-      id: 1,
-      name: 'burger',
-      description: 'omeletter',
-      amount: 40,
-      category: 'misc',
-      date: new Date(),
-    },
-
-    {
-      id: 2,
-      name: 'Apple',
-      description: 'idk',
-      amount: 44,
-      category: 'some',
-      date: new Date(),
-    },
-
-    {
-      id: 3,
-      name: 'Oranges',
-      description: 'some random',
-      amount: 50,
-      category: 'fruits',
-      date: new Date(),
-    },
-
-    {
-      id: 4,
-      name: 'Chicken',
-      description: 'Very Tasty',
-      amount: 14,
-      category: 'Non-Veg',
-      date: new Date(),
-    },
-  ];
+  datasource = new MatTableDataSource<Expense>();
   displayedColumns: string[] = ['date', 'name','category', 'description', 'amount'];
 
-  // constructor(private expenseService: ExpenseService) {}
+  addForm = new FormGroup({
+    date: new FormControl(),
+    name: new FormControl(''),
+    category: new FormControl(''),
+    description: new FormControl(''),
+    amount: new FormControl(0),
+  });
 
-  ngOnInit() {
-    // this.expenseService.getRecentExpenses().subscribe(expenses => {
-    //   this.recentExpenses = expenses;
-    // });
+  constructor() {
+    this.recentExpenses = this.firebaseDataService.getAllExpenses();
+    this.datasource.data = this.recentExpenses;
   }
+
   onSubmit() {
-    // Handle form submission logic here, e.g., saving the expense data
-    // console.log('Expense added:', this.expense);
-    this.closeExpenseForm(); // Close the form after submission
+    const expense: Expense = {
+      id: this.recentExpenses.length,
+      date: new Date(this.addForm.value.date),
+      name: this.addForm.value.name ?? "",
+      category: this.addForm.value.category ?? "",
+      description: this.addForm.value.description?? "",
+      amount: this.addForm.value.amount ?? 0,
+    };
+
+    this.recentExpenses.push({ ...expense}); 
+    this.datasource.data = this.recentExpenses;
+    this.showExpenseForm = false;
+    console.log('Item added');
   }
 
   addNewExpense() {
@@ -78,12 +60,5 @@ export class HomeComponent implements OnInit{
 
   openSettings() {
     // Navigate to the settings page
-  }
-
-  openExpenseForm() {
-    this.showExpenseForm = true;
-  }
-  closeExpenseForm() {
-    this.showExpenseForm = false;
   }
 }
