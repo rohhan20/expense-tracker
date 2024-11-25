@@ -1,97 +1,138 @@
 import { Component, inject } from '@angular/core';
-import { MatError, MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'; 
-import { AngularFireAuth, AngularFireAuthModule } from '@angular/fire/compat/auth';
-import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [MatFormField, MatLabel, ReactiveFormsModule, AngularFireAuthModule, MatError, CommonModule, MatInputModule, MatFormFieldModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule
+  ],
+  styleUrls: ['./signup.component.css'],
   template: `
-  <div class="signup-container">
-  <form [formGroup]="signupForm" (submit)="onSignup()">
-    <h2>Sign Up</h2>
-    @if(errorMessage) {
-      <div><{{errorMessage}}</div>
-    }
-    <mat-form-field appearance="fill">
-      <mat-label>Name</mat-label>
-      <input matInput placeholder="Your Name" formControlName= "name" required>
-      <mat-error *ngIf="signupForm.controls['name'].hasError('required')">
-        Name is required
-      </mat-error>
-    </mat-form-field>
+    <div class="signup-container mat-elevation-z8">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <h2>Create Account</h2>
+          </mat-card-title>
+        </mat-card-header>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" placeholder="Email" formControlName="email" required>
-      <mat-error *ngIf="signupForm.controls['email'].hasError('required')">
-        Email is required
-      </mat-error>
-      <mat-error *ngIf="signupForm.controls['email'].hasError('email')">
-        Invalid email address
-      </mat-error>
-    </mat-form-field>
+        <mat-card-content>
+          <form [formGroup]="signupForm" (ngSubmit)="onSignup()">
+            @if (errorMessage) {
+              <div class="error-message">
+                <mat-error>{{errorMessage}}</mat-error>
+              </div>
+            }
 
-    <mat-form-field appearance="fill">
-      <mat-label>Password</mat-label>
-      <input matInput type="password" placeholder="Password" formControlName="password" required>
-      <mat-error *ngIf="signupForm.controls['password'].hasError('required')">
-        Password is required
-      </mat-error>
-      <mat-error *ngIf="signupForm.controls['password'].hasError('minlength')">
-        Password must be at least 8 characters
-      </mat-error>
-    </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Name</mat-label>
+              <input 
+                matInput 
+                placeholder="Enter your name"
+                formControlName="name"
+                autocomplete="name">
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error *ngIf="signupForm.get('name')?.hasError('required')">
+                Name is required
+              </mat-error>
+            </mat-form-field>
 
-    <button mat-raised-button color="primary" type="submit" [disabled]="signupForm.invalid">Sign Up</button>
-  </form>
-</div>
-  `,
-  styleUrl: './signup.component.css'
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input 
+                matInput 
+                type="email" 
+                placeholder="Enter your email"
+                formControlName="email"
+                autocomplete="email">
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error *ngIf="signupForm.get('email')?.hasError('required')">
+                Email is required
+              </mat-error>
+              <mat-error *ngIf="signupForm.get('email')?.hasError('email')">
+                Please enter a valid email
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Password</mat-label>
+              <input 
+                matInput 
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                autocomplete="new-password">
+              <mat-icon matPrefix>lock</mat-icon>
+              <button 
+                mat-icon-button 
+                matSuffix 
+                type="button"
+                (click)="hidePassword = !hidePassword">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="signupForm.get('password')?.hasError('required')">
+                Password is required
+              </mat-error>
+              <mat-error *ngIf="signupForm.get('password')?.hasError('minlength')">
+                Password must be at least 8 characters
+              </mat-error>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button 
+                mat-raised-button 
+                color="primary" 
+                type="submit"
+                [disabled]="signupForm.invalid || signupForm.pending"
+                class="signup-button">
+                <mat-icon>person_add</mat-icon>
+                Sign Up
+              </button>
+              <a mat-button routerLink="/" color="accent">
+                Already have an account? Login
+              </a>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  `
 })
-
 export class SignupComponent {
-  authService: AuthService = inject(AuthService);
-  router = inject(Router);
-  signupForm: FormGroup = new FormGroup({
-    name: new FormControl('', Validators.required),
-    email: new FormControl('', Validators.email),
-    password: new FormControl('', [Validators.minLength(8), Validators.required])
-  })
-  errorMessage: String | null = null;
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  // constructor(private afAuth: AngularFireAuth) {}
+  hidePassword = true;
+  errorMessage: string | null = null;
 
-  onSignup() {
-    this.authService
-    .register(this.signupForm.value.email, this.signupForm.value.name, this.signupForm.value.password)
-    .subscribe({
-      next: () => {this.router.navigate(['home']);},
-      error: (err) => {this.errorMessage = err.code;}
-    });
-    // if (this.signupForm.valid) {
-    //   const { email, password } = this.signupForm.value;
-    //   this.afAuth.createUserWithEmailAndPassword(email, password)
-    //     .then(userCredential => {
-    //       // Optionally update user profile with display name
-    //       if (userCredential.user) {
-    //        userCredential.user.updateProfile({
-    //           displayName: this.signupForm.value.name
-    //         });
-    //       }
-    //     })
-    //     .then(() => {
-    //       console.log('User created successfully!');
-    //       // Additional navigation logic or success messages can go here
-    //     })
-    //     .catch(error => {
-    //       console.error('Error signing up:', error);
-    //     });
-    // }
+  signupForm = new FormGroup({
+    name: new FormControl('', [Validators.required]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required, Validators.minLength(8)])
+  });
+
+  onSignup(): void {
+    if (this.signupForm.valid) {
+      const { email, name, password } = this.signupForm.getRawValue();
+      this.authService.register(email!, name!, password!).subscribe({
+        next: () => this.router.navigate(['home']),
+        error: (err) => this.errorMessage = err.code
+      });
+    }
   }
 }

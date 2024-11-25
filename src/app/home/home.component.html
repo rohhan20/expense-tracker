@@ -1,69 +1,95 @@
 <div class="homepage">
-    <h1 class="welcome">Welcome user!</h1>
+  <h1 class="welcome">Welcome {{authService.currentUserSig()?.username}}!</h1>
   
-    <div class="recent-expenses">
-      <h2>Recent Expenses</h2>
+  <div class="recent-expenses">
+    <h2>Recent Expenses</h2>
 
     <div class="quick-actions">
-      <button (click)="this.showExpenseForm = true">Add New Expense</button>
+      <button mat-raised-button color="primary" (click)="showExpenseForm = true">
+        <mat-icon>add</mat-icon>
+        Add New Expense
+      </button>
     </div>
 
-      <table mat-table [dataSource]="datasource" class="mat-elevation-z8">
+    <table mat-table [dataSource]="datasource" class="mat-elevation-z8">
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let expense">{{expense.date | date}}</td>
+      </ng-container>
 
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef> Name </th>
-          <td mat-cell *matCellDef="let expense"> {{expense.name}} </td>
-        </ng-container>
-      
-        <ng-container matColumnDef="category">
-          <th mat-header-cell *matHeaderCellDef> Category </th>
-          <td mat-cell *matCellDef="let expense"> {{expense.category}} </td>
-        </ng-container>
-        
-        <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef> Description </th>
-          <td mat-cell *matCellDef="let expense"> {{expense.description}} </td>
-        </ng-container>
-        
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef> Amount </th>
-          <td mat-cell *matCellDef="let expense"> {{expense.amount | currency}} </td>
-        </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let expense">{{expense.name}}</td>
+      </ng-container>
 
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef> Date </th>
-          <td mat-cell *matCellDef="let expense"> {{expense.date | date}} </td>
-        </ng-container>
-      
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-    </div>
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef>Category</th>
+        <td mat-cell *matCellDef="let expense">{{expense.category}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let expense">{{expense.description}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Amount</th>
+        <td mat-cell *matCellDef="let expense">{{expense.amount | currency}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let expense">
+          <button mat-icon-button color="primary" (click)="editExpense(expense)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteExpense(expense.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
     <div class="popup" *ngIf="showExpenseForm">
       <div class="popup-content">
-        <h2>Add New Expense</h2>
-        <form (submit)="onSubmit()" [formGroup]="addForm">
-            <label for="date">Date: </label>
-            <input type="date" id="date" formControlName="date" required>
+        <h2>{{isEditing ? 'Edit' : 'Add New'}} Expense</h2>
+        <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline">
+            <mat-label>Date</mat-label>
+            <input matInput type="date" formControlName="date">
+          </mat-form-field>
 
-            <label for="name">Name: </label>
-            <input type="text" id="name" formControlName="name" required>
+          <mat-form-field appearance="outline">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name">
+          </mat-form-field>
 
-            <label for="category">Category: </label>
-            <input type="text" id="category" formControlName="category" required>
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <input matInput formControlName="category">
+          </mat-form-field>
 
-            <label for="description">Description: </label>
-            <input type="text" id="description" formControlName="description" required>
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <input matInput formControlName="description">
+          </mat-form-field>
 
-            <label for="amount">Amount: </label>
-            <input type="number" id="amount" formControlName="amount" required>
+          <mat-form-field appearance="outline">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" formControlName="amount">
+          </mat-form-field>
 
-            <div class="form-actions">
-            <button type="primary">Submit</button>
-            <button type="button" (click)="this.showExpenseForm = false">Cancel</button>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit">
+              {{isEditing ? 'Update' : 'Add'}} Expense
+            </button>
+            <button mat-button type="button" (click)="resetForm()">Cancel</button>
           </div>
         </form>
       </div>
     </div>
   </div>
+</div>

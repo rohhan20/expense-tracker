@@ -1,35 +1,63 @@
-import { Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
+
+interface LoginForm {
+  email: FormControl<string>;
+  password: FormControl<string>;
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule],
+  imports: [
+    ReactiveFormsModule, 
+    RouterModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatSnackBarModule,
+  ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
-
 export class LoginComponent {
-  loginForm = new FormGroup({
-    email: new FormControl(''),
-    password: new FormControl(''),
-  });
-  authService: AuthService = inject(AuthService);
-  errorMessage: string | null = null;
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
 
-  constructor(private router: Router) { }
+  errorMessage = signal<string | null>(null);
+  hidePassword = true;
 
-  login() {
-    let email = this.loginForm.value.email ?? '';
-    let password = this.loginForm.value.password ?? '';
-    this.authService
-    .login(email, password)
-    .subscribe({
-      next: () => {this.router.navigate(['home']);},
-      error: (error) => {this.errorMessage = error.code;}
-    });
-    this.router.navigate(['home']);
+  loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
+  }) as FormGroup<LoginForm>;
+
+  login(): void {
+    if (this.loginForm.valid) {
+      const { email, password } = this.loginForm.getRawValue();
+      
+      this.authService.login(email, password).subscribe({
+        next: () => this.router.navigate(['home']),
+        error: (error) => {
+          this.snackBar.open(error.code, 'Close', {
+            duration: 3000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom'
+          });
+        }
+      });
+    }
   }
 }

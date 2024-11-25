@@ -1,64 +1,106 @@
-import {Component, inject} from '@angular/core';
-import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import { Component, inject, OnInit } from '@angular/core';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Expense } from './expense';
-import { CommonModule} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FirebaseDataService } from '../firebase-data.service';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../auth.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [MatTableModule, CommonModule, ReactiveFormsModule],
+  imports: [
+    MatTableModule, 
+    CommonModule, 
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
-  providers: []
+  styleUrl: './home.component.css'
 })
-
-export class HomeComponent{
-  firebaseDataService: FirebaseDataService = inject(FirebaseDataService);
-  recentExpenses: Expense[] = [];
-  showExpenseForm=false;
+export class HomeComponent implements OnInit {
+  private firebaseDataService = inject(FirebaseDataService);
+  authService = inject(AuthService);
+  
+  showExpenseForm = false;
+  isEditing = false;
+  currentEditId: string | null = null;
+  
   datasource = new MatTableDataSource<Expense>();
-  displayedColumns: string[] = ['date', 'name','category', 'description', 'amount'];
+  displayedColumns: string[] = ['date', 'name', 'category', 'description', 'amount', 'actions'];
 
-  addForm = new FormGroup({
-    date: new FormControl(),
-    name: new FormControl(''),
-    category: new FormControl(''),
-    description: new FormControl(''),
-    amount: new FormControl(0),
+  expenseForm = new FormGroup({
+    date: new FormControl(new Date(), [Validators.required]),
+    name: new FormControl('', [Validators.required]),
+    category: new FormControl('', [Validators.required]),
+    description: new FormControl('', [Validators.required]),
+    amount: new FormControl<number>(0, [Validators.required, Validators.min(0)])
   });
 
-  constructor() {
-    this.recentExpenses = this.firebaseDataService.getAllExpenses();
-    this.datasource.data = this.recentExpenses;
+  ngOnInit() {
+    this.loadExpenses();
+  }
+
+  loadExpenses() {
+    this.firebaseDataService.getExpenses().subscribe(expenses => {
+      this.datasource.data = expenses;
+    });
   }
 
   onSubmit() {
-    const expense: Expense = {
-      id: this.recentExpenses.length,
-      date: new Date(this.addForm.value.date),
-      name: this.addForm.value.name ?? "",
-      category: this.addForm.value.category ?? "",
-      description: this.addForm.value.description?? "",
-      amount: this.addForm.value.amount ?? 0,
-    };
+    if (this.expenseForm.valid) {
+      const expense = this.expenseForm.value as Expense;
+      
+      if (this.isEditing && this.currentEditId) {
+        this.firebaseDataService.updateExpense(this.currentEditId, expense).subscribe({
+          next: () => {
+            this.resetForm();
+            this.loadExpenses();
+          }
+        });
+      } else {
+        this.firebaseDataService.addExpense(expense).subscribe({
+          next: () => {
+            this.resetForm();
+            this.loadExpenses();
+          }
+        });
+      }
+    }
+  }
 
-    this.recentExpenses.push({ ...expense}); 
-    this.datasource.data = this.recentExpenses;
+  editExpense(expense: Expense) {
+    this.isEditing = true;
+    this.currentEditId = expense.id as string;
+    this.showExpenseForm = true;
+    this.expenseForm.patchValue({
+      date: expense.date,
+      name: expense.name as string,
+      category: expense.category,
+      description: expense.description,
+      amount: expense.amount
+    });
+  }
+
+  deleteExpense(id: string) {
+    if (confirm('Are you sure you want to delete this expense?')) {
+      this.firebaseDataService.deleteExpense(id).subscribe({
+        next: () => this.loadExpenses()
+      });
+    }
+  }
+
+  resetForm() {
+    this.expenseForm.reset();
     this.showExpenseForm = false;
-    console.log('Item added');
-  }
-
-  addNewExpense() {
-    // Navigate to the add expense page
-  }
-
-  viewAllExpenses() {
-    // Navigate to the expense list page
-  }
-
-  openSettings() {
-    // Navigate to the settings page
+    this.isEditing = false;
+    this.currentEditId = null;
   }
 }

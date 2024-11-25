@@ -1,3 +1,6 @@
+import { initializeApp } from 'firebase/app';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
+
 export const environment = {
     production: false,
     firebaseConfig: {
@@ -9,3 +12,8 @@ export const environment = {
         appId: "1:624781238931:web:070c6b28e20917ead7e366"
       }
 };
+
+// Initialize Firebase and set persistence
+const app = initializeApp(environment.firebaseConfig);
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence);

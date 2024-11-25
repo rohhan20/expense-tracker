@@ -4,6 +4,7 @@ import { NavbarComponent } from "./navbar/navbar.component";
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AuthService } from './auth.service';
+import { FirebaseDataService } from './firebase-data.service';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +15,9 @@ import { AuthService } from './auth.service';
   ],
   template: `
   <main>
-    <header class="brand-name">
+    @if(authService.isAuthenticated()){ <header class="brand-name">
        <app-navbar></app-navbar>
-    </header>
+    </header> }
     <section class="content">
       <router-outlet></router-outlet>
     </section>
@@ -24,7 +25,24 @@ import { AuthService } from './auth.service';
   styleUrls: ['./app.component.css']
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'expense-tracker';
   authService = inject(AuthService); 
+  dataService = inject(FirebaseDataService);
+
+  ngOnInit() {
+    // this.authService.user$.subscribe(user => {
+    //   if (user) {
+    //     // this.authService.currentUserSig.set({email: user.email, username: user.displayName});
+    //     // Router.navigate(['/home']);
+    //   } else {
+    //     // this.authService.currentUserSig.set(null);
+    //     // Router.navigate(['/']);
+    //   }
+    // });
+    
+    this.dataService.getExpenses().subscribe(expenses => {
+      console.log(expenses);
+    });
+  }
 }
